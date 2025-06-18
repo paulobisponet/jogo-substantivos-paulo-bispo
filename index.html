@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detetive das Palavras - Caça Substantivos</title>
+    <style>
+        /* Viewport e configurações base para mobile */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .emoji {
+            font-size: 2em;
+            margin: 10px 0;
+        }
+
+        .professor-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            border: 2px solid rgba(255, 215, 0, 0.6);
+        }
+
+        .professor-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 8px;
+        }
+
+        .frase-impacto {
+            font-size: 0.95em;
+            font-style: italic;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            line-height: 1.3;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word-card {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 40px 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .word-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .question {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        /* Melhorias para dispositivos touch */
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .btn-sim {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-nao {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-dica {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feedback {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .feedback.correct {
+            background: rgba(72, 187, 120, 0.2);
+            border: 2px solid #48bb78;
+        }
+
+        .feedback.incorrect {
+            background: rgba(245, 101, 101, 0.2);
+            border: 2px solid #f56565;
+        }
+
+        .feedback.dica {
+            background: rgba(237, 137, 54, 0.2);
+            border: 2px solid #ed8936;
+        }
+
+        .intro-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .intro-content {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .btn-start {
+            background: #38a169;
+            color: white;
+            padding: 20px 40px;
+            font-size: 1.3em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .level-up {
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: #333;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .final-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .final-content {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Otimizações específicas para celular */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .professor-info {
+                padding: 12px;
+                margin-top: 15px;
+            }
+            
+            .professor-name {
+                font-size: 1em;
+            }
+            
+            .frase-impacto {
+                font-size: 0.85em;
+            }
+            
+            .word-display {
+                font-size: 2em;
+            }
+            
+            .buttons {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+            
+            .word-card {
+                padding: 30px 15px;
+            }
+            
+            .status {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            
+            .feedback {
+                padding: 15px;
+                font-size: 1em;
+            }
+        }
+
+        /* Otimizações para telas muito pequenas */
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 1.3em;
+            }
+            
+            .word-display {
+                font-size: 1.8em;
+                letter-spacing: 1px;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9em;
+                min-width: 70px;
+            }
+            
+            .professor-name {
+                font-size: 0.95em;
+            }
+            
+            .frase-impacto {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela de Introdução -->
+        <div id="introScreen" class="intro-screen">
+            <div class="header">
+                <div class="emoji">🕵️</div>
+                <h1>Detetive das Palavras</h1>
+                <p>Caça Substantivos</p>
+                <div class="professor-info">
+                    <div class="professor-name">Professor: Paulo Bispo</div>
+                    <div class="frase-impacto">"Educar com Propósito, Inovar com Paixão"</div>
+                </div>
+            </div>
+            
+            <div class="intro-content">
+                <h2>📚 MISSÃO</h2>
+                <p>Encontrar os SUBSTANTIVOS escondidos!</p>
+                
+                <h3>💡 LEMBRE-SE:</h3>
+                <p>Substantivos nomeiam:</p>
+                <ul style="text-align: left; margin: 15px 0;">
+                    <li>👥 Pessoas (professor, aluno)</li>
+                    <li>🐱 Animais (cachorro, gato)</li>
+                    <li>📦 Objetos (mesa, livro)</li>
+                    <li>🏠 Lugares (escola, casa)</li>
+                </ul>
+                
+                <h3>🎯 COMO JOGAR:</h3>
+                <p>Toque em SIM se for substantivo<br>
+                Toque em NÃO se não for substantivo<br>
+                Use DICA quando precisar de ajuda!</p>
+            </div>
+            
+            <button class="btn btn-start" onclick="iniciarJogo()">
+                🚀 COMEÇAR AVENTURA
+            </button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div id="gameScreen" class="hidden">
+            <div class="status">
+                <div>🏆 Pontos: <span id="pontos">0</span> | 📊 Nível: <span id="nivel">1</span></div>
+                <div>🔥 Sequência: <span id="sequencia">0</span>/5 | 🎲 Rodada: <span id="rodada">1</span></div>
+            </div>
+
+            <div class="game-area">
+                <div class="word-card">
+                    <div class="word-display" id="palavraAtual">CASA</div>
+                    <div class="question">É um SUBSTANTIVO?</div>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn btn-sim" onclick="responder(true)">✅ SIM</button>
+                    <button class="btn btn-nao" onclick="responder(false)">❌ NÃO</button>
+                    <button class="btn btn-dica" onclick="darDica()">💡 DICA</button>
+                </div>
+
+                <div id="feedback" class="feedback hidden"></div>
+            </div>
+        </div>
+
+        <!-- Tela Final -->
+        <div id="finalScreen" class="hidden final-screen">
+            <div class="final-content">
+                <div class="emoji">🏆</div>
+                <h1>MISSÃO CONCLUÍDA!</h1>
+                <div class="professor-info">
+                    <div class="professor-name">Professor: Paulo Bispo</div>
+                    <div class="frase-impacto">"Educar com Propósito, Inovar com Paixão"</div>
+                </div>
+                <div id="relatorioFinal"></div>
+                <button class="btn btn-start" onclick="reiniciarJogo()" style="margin-top: 20px;">
+                    🔄 JOGAR NOVAMENTE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class JogoSubstantivos {
+            constructor() {
+                this.substantivos = {
+                    pessoa: ["professor", "aluno", "médico", "jogador", "cantor", "mãe", "pai", "irmão", "amigo", "vizinho"],
+                    animal: ["cachorro", "gato", "pássaro", "peixe", "cavalo", "vaca", "galinha", "abelha", "borboleta", "cobra"],
+                    objeto: ["mesa", "cadeira", "livro", "caneta", "computador", "celular", "bicicleta", "carro", "bola", "relógio"],
+                    lugar: ["escola", "casa", "parque", "hospital", "mercado", "praia", "cidade", "país", "rua", "biblioteca"]
+                };
+                
+                this.naoSubstantivos = [
+                    "correr", "bonito", "muito", "rapidamente", "feliz", "grande", "devagar", "sempre", 
+                    "nunca", "aqui", "ontem", "azul", "porque", "quando", "onde", "como"
+                ];
+                
+                this.reset();
+            }
+            
+            reset() {
+                this.pontos = 0;
+                this.nivel = 1;
+                this.acertosConsecutivos = 0;
+                this.rodada = 1;
+                this.palavraAtual = "";
+                this.ehSubstantivo = false;
+                this.categoria = "";
+                this.jaUsouDica = false;
+            }
+            
+            escolherPalavra() {
+                this.jaUsouDica = false;
+                
+                if (Math.random() < 0.6) { // 60% chance de ser substantivo
+                    const categorias = Object.keys(this.substantivos);
+                    this.categoria = categorias[Math.floor(Math.random() * categorias.length)];
+                    const palavras = this.substantivos[this.categoria];
+                    this.palavraAtual = palavras[Math.floor(Math.random() * palavras.length)];
+                    this.ehSubstantivo = true;
+                } else {
+                    this.palavraAtual = this.naoSubstantivos[Math.floor(Math.random() * this.naoSubstantivos.length)];
+                    this.ehSubstantivo = false;
+                    this.categoria = "";
+                }
+                
+                document.getElementById('palavraAtual').textContent = this.palavraAtual.toUpperCase();
+            }
+            
+            darDica() {
+                if (this.jaUsouDica) {
+                    this.mostrarFeedback("Você já usou a dica desta rodada! 🤔", "dica");
+                    return;
+                }
+                
+                this.jaUsouDica = true;
+                let dica = "";
+                
+                if (this.ehSubstantivo) {
+                    const dicas = {
+                        pessoa: `🧑 DICA: '${this.palavraAtual}' é o nome de uma PESSOA!`,
+                        animal: `🐱 DICA: '${this.palavraAtual}' é o nome de um ANIMAL!`,
+                        objeto: `📦 DICA: '${this.palavraAtual}' é o nome de um OBJETO!`,
+                        lugar: `🏠 DICA: '${this.palavraAtual}' é o nome de um LUGAR!`
+                    };
+                    dica = dicas[this.categoria];
+                } else {
+                    dica = `💭 DICA: '${this.palavraAtual}' expressa uma ação, qualidade ou circunstância - NÃO é substantivo!`;
+                }
+                
+                this.mostrarFeedback(dica, "dica");
+            }
+            
+            responder(resposta) {
+                const acertou = (resposta && this.ehSubstantivo) || (!resposta && !this.ehSubstantivo);
+                
+                let feedback = "";
+                let tipo = "";
+                
+                if (acertou) {
+                    const pontosGanhos = this.nivel * 10;
+                    this.pontos += pontosGanhos;
+                    this.acertosConsecutivos++;
+                    
+                    feedback = `✅ CORRETO! +${pontosGanhos} pontos!<br><br>`;
+                    tipo = "correct";
+                    
+                    // Verificar level up
+                    if (this.acertosConsecutivos === 5) {
+                        this.nivel++;
+                        this.acertosConsecutivos = 0;
+                        feedback += `🎉 PARABÉNS! Você subiu para o NÍVEL ${this.nivel}!<br>Agora você ganha mais pontos por acerto!<br><br>`;
+                    }
+                } else {
+                    this.acertosConsecutivos = 0;
+                    feedback = "❌ Ops! Não foi dessa vez...<br><br>";
+                    tipo = "incorrect";
+                }
+                
+                // Explicação
+                if (this.ehSubstantivo) {
+                    const explicacoes = {
+                        pessoa: `'${this.palavraAtual}' é um substantivo porque nomeia uma PESSOA.`,
+                        animal: `'${this.palavraAtual}' é um substantivo porque nomeia um ANIMAL.`,
+                        objeto: `'${this.palavraAtual}' é um substantivo porque nomeia um OBJETO.`,
+                        lugar: `'${this.palavraAtual}' é um substantivo porque nomeia um LUGAR.`
+                    };
+                    feedback += `📝 ${explicacoes[this.categoria]}`;
+                } else {
+                    feedback += `📝 '${this.palavraAtual}' NÃO é substantivo.<br>Substantivos nomeiam seres, objetos ou lugares.`;
+                }
+                
+                this.mostrarFeedback(feedback, tipo);
+                this.atualizarInterface();
+                
+                // Próxima rodada após 3 segundos
+                setTimeout(() => {
+                    this.proximaRodada();
+                }, 3000);
+            }
+            
+            mostrarFeedback(texto, tipo) {
+                const feedback = document.getElementById('feedback');
+                feedback.innerHTML = texto;
+                feedback.className = `feedback ${tipo}`;
+                feedback.classList.remove('hidden');
+            }
+            
+            atualizarInterface() {
+                document.getElementById('pontos').textContent = this.pontos;
+                document.getElementById('nivel').textContent = this.nivel;
+                document.getElementById('sequencia').textContent = this.acertosConsecutivos;
+                document.getElementById('rodada').textContent = this.rodada;
+            }
+            
+            proximaRodada() {
+                this.rodada++;
+                document.getElementById('feedback').classList.add('hidden');
+                this.escolherPalavra();
+                this.atualizarInterface();
+            }
+            
+            finalizarJogo() {
+                let relatorio = `
+                    <h2>📊 RELATÓRIO FINAL</h2>
+                    <p><strong>Rodadas jogadas:</strong> ${this.rodada - 1}</p>
+                    <p><strong>Pontos totais:</strong> ${this.pontos}</p>
+                    <p><strong>Nível alcançado:</strong> ${this.nivel}</p>
+                    <br>
+                `;
+                
+                if (this.pontos >= 200) {
+                    relatorio += `<p>🌟 <strong>EXCELENTE!</strong> Você é um verdadeiro detetive dos substantivos!</p>`;
+                } else if (this.pontos >= 100) {
+                    relatorio += `<p>👏 <strong>MUITO BOM!</strong> Você está dominando os substantivos!</p>`;
+                } else if (this.pontos >= 50) {
+                    relatorio += `<p>👍 <strong>BOM TRABALHO!</strong> Continue praticando!</p>`;
+                } else {
+                    relatorio += `<p>🎯 <strong>CONTINUE PRATICANDO!</strong> Você está no caminho certo!</p>`;
+                }
+                
+                relatorio += `<br><p>💡 <strong>DICA DO PROFESSOR PAULO BISPO:</strong><br>Lembre-se: Substantivos nomeiam pessoas, animais, objetos e lugares!<br><br>"Educar com Propósito, Inovar com Paixão"</p>`;
+                
+                document.getElementById('relatorioFinal').innerHTML = relatorio;
+                document.getElementById('gameScreen').classList.add('hidden');
+                document.getElementById('finalScreen').classList.remove('hidden');
+            }
+        }
+
+        let jogo = new JogoSubstantivos();
+
+        function iniciarJogo() {
+            document.getElementById('introScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            jogo.escolherPalavra();
+            jogo.atualizarInterface();
+        }
+
+        function responder(resposta) {
+            jogo.responder(resposta);
+        }
+
+        function darDica() {
+            jogo.darDica();
+        }
+
+        function reiniciarJogo() {
+            jogo.reset();
+            document.getElementById('finalScreen').classList.add('hidden');
+            document.getElementById('introScreen').classList.remove('hidden');
+        }
+
+        // Adicionar botão de sair no jogo
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameScreen = document.getElementById('gameScreen');
+            const sairBtn = document.createElement('button');
+            sairBtn.innerHTML = '🏁 FINALIZAR';
+            sairBtn.className = 'btn btn-dica';
+            sairBtn.style.position = 'fixed';
+            sairBtn.style.top = '10px';
+            sairBtn.style.right = '10px';
+            sairBtn.style.zIndex = '1000';
+            sairBtn.onclick = () => jogo.finalizarJogo();
+            gameScreen.appendChild(sairBtn);
+        });
+    </script>
+</body>
+</html>
